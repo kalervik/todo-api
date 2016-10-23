@@ -37,19 +37,33 @@ app.get('/todos', function (req, res) {
 //get todos/:id
 app.get('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
-	});
-	if (matchedTodo) {
-		res.json(matchedTodo);
-	} else {
-		res.status(404).send({
+	db.todo.findById(todoId).then(function(todo){
+		if(todo){
+			res.json(todo.toJSON());
+		}else{
+			res.status(404).send({
 			error: {
 				status: 404,
-				message: 'TODO with this id doesn\'t exist'
+				message: 'TODO with id: ' + todoId +' doesn\'t exist'
 			}
 		});
-	}
+		}
+	},function(e){
+		res.status(404).json(e);
+	});
+//	var matchedTodo = _.findWhere(todos, {
+//		id: todoId
+//	});
+//	if (matchedTodo) {
+//		res.json(matchedTodo);
+//	} else {
+//		res.status(404).send({
+//			error: {
+//				status: 404,
+//				message: 'TODO with this id doesn\'t exist'
+//			}
+//		});
+//	}
 });
 
 //posting a new todo item  /todos/todo
@@ -62,25 +76,6 @@ app.post('/todos', function (req, res) {
 	}),function (e){
 		res.status(400).json(e);
 	};
-//	if ((!_.isBoolean(body.completed)) || (!_.isString(body.description)) || (body.description.trim().length === 0)) {
-//
-//	}
-//	body.description = body.description.trim();
-//	body.id = todoNextId++;
-//	var matchedTodo = _.findWhere(todos, {
-//		description: body.description
-//	});
-//	if (!matchedTodo) {
-//		todos.push(body);
-//		res.json(todos);
-//	} else {
-//		return res.status(200).send({
-//			error: {
-//				status: 200,
-//				message: 'Todo already exist with this name.'
-//			}
-//		});
-//	}
 });
 //delete /todos/:id
 app.delete('/todos/:id', function (req, res) {
