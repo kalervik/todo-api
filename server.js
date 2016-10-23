@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
 var app = express();
 var PORT = process.env.PORT || 3000;
 var todos = [];
@@ -18,12 +19,7 @@ app.get('/todos', function(req, res){
 //get todos/:id
 app.get('/todos/:id', function(req, res){
 	var todoId = parseInt(req.params.id);
-	var matchedTodo;
-	todos.forEach(function (todo){
-		if(todo.id === todoId){
-			matchedTodo = todo;
-		}
-	});
+	var matchedTodo = _.findWhere(todos, {id: todoId});
 	if(matchedTodo){
 		res.json(matchedTodo);
 	}else{
@@ -39,15 +35,25 @@ app.get('/todos/:id', function(req, res){
 
 //posting a new todo item  /todos/todo
 app.post('/todos', function(req, res){
-	var body = req.body;
-	var todo = {
-		id : todoNextId,
-		description: body.description,
-		completed: body.completed
-	};
-	todos.push(todo);
-	todoNextId++;
-	res.json(todos);
+	var body = _.pick(req.body, 'description', 'completed');
+	if((!_.isBoolean(body.completed)) || (!_.isString(body.description)) || (body.description.trim().length === 0)){
+		
+	}
+	body.description = body.description.trim();
+	body.id = todoNextId++;
+	var matchedTodo = _.findWhere(todos, {description: body.description});
+	if(!matchedTodo){
+		todos.push(body);	
+		res.json(todos);
+	}else{
+		return res.status(200).send(
+			{
+				error :{
+					status: 200,
+					message: 'Todo already exist with this name.'
+				}
+			});
+	}
 });
 
 app.listen(PORT, function(){
