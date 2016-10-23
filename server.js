@@ -55,7 +55,23 @@ app.post('/todos', function(req, res){
 			});
 	}
 });
-
+//delete /todos/:id
+app.delete('/todos/:id', function(req, res){
+	var todoId = parseInt(req.params.id);
+	var matchedTodo = _.findWhere(todos, {id : todoId});
+	if(matchedTodo){
+		todos = _.without(todos, matchedTodo)
+		res.json({message: 'Todo deleted with id: ' + todoId + '.'});
+	}else{
+		res.status(404).send(
+			{
+				error :{
+					status: 404,
+					message: 'TODO with this id doesn\'t exist'
+				}
+			});
+	}
+});
 app.listen(PORT, function(){
 	console.log('Express Listening at ' + PORT + '!');
 });
